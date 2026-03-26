@@ -1,0 +1,38 @@
+{
+  "nodeModulesDir": "auto",
+  "unstable": ["detect-cjs"],
+  "tasks": {
+    "cli": "deno run -A --unstable-detect-cjs src/cli.ts",
+    "check": "deno check src/cli.ts",
+    "deploy": "deno run -A --unstable-detect-cjs scripts/deploy-contract.ts"
+  },
+  "imports": {
+    "@paimaexample/midnight-contracts": "jsr:@paimaexample/midnight-contracts@0.10.6",
+    "@paimaexample/midnight-contracts/midnight-env": "jsr:@paimaexample/midnight-contracts@0.10.6/midnight-env",
+    "@paimaexample/midnight-contracts/deploy": "jsr:@paimaexample/midnight-contracts@0.10.6/deploy",
+    "@paimaexample/midnight-contracts/types": "jsr:@paimaexample/midnight-contracts@0.10.6/types",
+    "@midnight-ntwrk/compact-js": "npm:@midnight-ntwrk/compact-js@2.5.0",
+    "@midnight-ntwrk/compact-runtime": "npm:@midnight-ntwrk/compact-runtime@0.15.0",
+    "@midnight-ntwrk/ledger-v8": "npm:@midnight-ntwrk/ledger-v8@8.0.3",
+    "@midnight-ntwrk/midnight-js-contracts": "npm:@midnight-ntwrk/midnight-js-contracts@4.0.2",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "npm:@midnight-ntwrk/midnight-js-http-client-proof-provider@4.0.2",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "npm:@midnight-ntwrk/midnight-js-indexer-public-data-provider@4.0.2",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "npm:@midnight-ntwrk/midnight-js-level-private-state-provider@4.0.2",
+    "@midnight-ntwrk/midnight-js-network-id": "npm:@midnight-ntwrk/midnight-js-network-id@4.0.2",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "npm:@midnight-ntwrk/midnight-js-node-zk-config-provider@4.0.2",
+    "@midnight-ntwrk/midnight-js-types": "npm:@midnight-ntwrk/midnight-js-types@4.0.2",
+    "@midnight-ntwrk/midnight-js-utils": "npm:@midnight-ntwrk/midnight-js-utils@4.0.2",
+    "@midnight-ntwrk/wallet-sdk-address-format": "npm:@midnight-ntwrk/wallet-sdk-address-format@3.1.0",
+    "@midnight-ntwrk/wallet-sdk-facade": "npm:@midnight-ntwrk/wallet-sdk-facade@3.0.0",
+    "@scure/bip39": "npm:@scure/bip39@1",
+    "@scure/bip39/wordlists/english": "npm:@scure/bip39@1/wordlists/english",
+    "rxjs": "npm:rxjs@7"
+  },
+  "allowScripts": [
+    "npm:classic-level@3.0.0",
+    "npm:cpu-features@0.0.10",
+    "npm:msgpackr-extract@3.0.3",
+    "npm:protobufjs@7.5.4",
+    "npm:ssh2@1.17.0"
+  ]
+}

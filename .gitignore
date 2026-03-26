@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Midnight local data
+midnight-level-db-*/
+midnight-indexer
+midnight-node
+midnight-proof-server
+
+# Benchmark results
+benchmarks/
+
+# State files
+wallets.json
+contracts.json
+contract-round-value.undeployed.json
+
+# Deno
+deno.lock
+
+# Environment
+.env
+.npmrc
+
+# TPS tooling
+midnight-tps
+midnight-ref-ai
+
+managed/
