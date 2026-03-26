@@ -7,6 +7,7 @@
 
 import { TTL_DURATION_MS } from "./config.ts";
 import type { WalletResult } from "./wallet-ops.ts";
+import { classifyError } from "./errors.ts";
 import type {
   FinalizedTransaction,
   UnprovenTransaction,
@@ -179,16 +180,34 @@ export async function balanceAndSubmitBatch(
       });
       continue;
     }
-    try {
-      const submitStart = performance.now();
-      const txId = await walletResult.wallet.submitTransaction(tx);
-      const submitMs = performance.now() - submitStart;
-      results.push({ hash: String(txId), balanceMs, proveMs, submitMs });
-      console.log(`  Submitted tx ${i + 1}/${entries.length}: ${txId} (${submitMs.toFixed(0)}ms)`);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      results.push({ hash: "", balanceMs, proveMs, submitMs: 0, error: msg });
-      console.error(`  Submit failed for tx ${i + 1}: ${msg}`);
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 5000;
+    let submitted = false;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const submitStart = performance.now();
+        const txId = await walletResult.wallet.submitTransaction(tx);
+        const submitMs = performance.now() - submitStart;
+        results.push({ hash: String(txId), balanceMs, proveMs, submitMs });
+        console.log(`  Submitted tx ${i + 1}/${entries.length}: ${txId} (${submitMs.toFixed(0)}ms${attempt > 1 ? ` attempt=${attempt}` : ""})`);
+        submitted = true;
+        break;
+      } catch (e) {
+        const err = e instanceof Error ? e : new Error(String(e));
+        const classified = classifyError(err);
+        if (attempt < MAX_RETRIES && classified.retryable) {
+          console.warn(`  Retry ${attempt}/${MAX_RETRIES} tx ${i + 1}: ${classified.code} - ${err.message.slice(0, 60)}`);
+          await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+          continue;
+        }
+        results.push({ hash: "", balanceMs, proveMs, submitMs: 0, error: err.message });
+        console.error(`  Submit failed for tx ${i + 1}: ${err.message}`);
+        submitted = true;
+        break;
+      }
+    }
+    if (!submitted) {
+      results.push({ hash: "", balanceMs, proveMs, submitMs: 0, error: "max_retries_exceeded" });
     }
   }
 

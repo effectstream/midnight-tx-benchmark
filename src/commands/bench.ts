@@ -632,23 +632,34 @@ export async function benchRun4b(): Promise<void> {
   // Phase 2: Submit all (parallel across wallets)
   console.log("\n--- Phase 2: Submit all TXs ---\n");
 
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY_MS = 5000;
+
   const submitTasks = allProved.map((entry) => {
     const wd = walletData[entry.walletIdx];
     return (async () => {
       const txStart = performance.now();
-      try {
-        const { txId, submitMs } = await submitFinalized(wd.result, entry.proved.finalized);
-        entry.timing.submitMs = submitMs;
-        entry.timing.txHash = txId;
-        entry.timing.totalMs = entry.timing.createMs + entry.timing.proveMs + submitMs;
-        console.log(`  [${entry.name}#${entry.txIdx + 1}] ${txId} (submit=${submitMs.toFixed(0)}ms)`);
-      } catch (e) {
-        const err = e instanceof Error ? e : new Error(String(e));
-        const classified = classifyError(err);
-        entry.timing.error = err.message;
-        entry.timing.errorCode = classified.code;
-        entry.timing.totalMs = performance.now() - txStart;
-        console.error(`  [${entry.name}#${entry.txIdx + 1}] SUBMIT ERROR ${classified.code} - ${err.message.slice(0, 80)}`);
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const { txId, submitMs } = await submitFinalized(wd.result, entry.proved.finalized);
+          entry.timing.submitMs = submitMs;
+          entry.timing.txHash = txId;
+          entry.timing.totalMs = entry.timing.createMs + entry.timing.proveMs + submitMs;
+          console.log(`  [${entry.name}#${entry.txIdx + 1}] ${txId} (submit=${submitMs.toFixed(0)}ms${attempt > 1 ? ` attempt=${attempt}` : ""})`);
+          break;
+        } catch (e) {
+          const err = e instanceof Error ? e : new Error(String(e));
+          const classified = classifyError(err);
+          if (attempt < MAX_RETRIES && classified.retryable) {
+            console.warn(`  [${entry.name}#${entry.txIdx + 1}] RETRY ${attempt}/${MAX_RETRIES} ${classified.code} - ${err.message.slice(0, 60)}`);
+            await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+            continue;
+          }
+          entry.timing.error = err.message;
+          entry.timing.errorCode = classified.code;
+          entry.timing.totalMs = performance.now() - txStart;
+          console.error(`  [${entry.name}#${entry.txIdx + 1}] SUBMIT FAILED ${classified.code} - ${err.message.slice(0, 80)}`);
+        }
       }
       transactions.push(entry.timing);
     })();

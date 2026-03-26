@@ -76,10 +76,10 @@ deno task cli bench run-4e
 # 4f: Single delegated — 1 xw creates circuit TX, 1 w balances + submits (reference baseline)
 deno task cli bench run-4f
 
-# 4a: Sequential — each w1-w10 sends 1 TX, waits for confirmation, then next
+# 4a: Parallel — 10 wallets each send 1 TX concurrently
 deno task cli bench run-4a
 
-# 4b: Parallel — all 10 wallets send 2 TXs concurrently (20 total)
+# 4b: Prove+Submit — 10 wallets prove 2 TXs each, then submit all in parallel
 deno task cli bench run-4b
 
 # 4c: Delegated 1-TX — xw1-xw10 create circuit TXs, w1-w10 balance and submit
@@ -87,6 +87,9 @@ deno task cli bench run-4c
 
 # 4d: Delegated 2-TX — same as 4c but 2 TXs per pair with speculative chaining
 deno task cli bench run-4d
+
+# 4g: Contract calls — 10 wallets each call add_entry sequentially
+MIDNIGHT_STORAGE_PASSWORD='MyP@ssw0rd!20260' deno task cli bench run-4g
 ```
 
 ### Step 5: Compare Results
@@ -114,10 +117,11 @@ Prints a comparison table:
 |----------|-------------|----------|------|
 | **4e** | 1 wallet sends 1 self-transfer TX (reference baseline) | 1 | Single |
 | **4f** | 1 xw creates circuit TX, 1 w balances + proves + submits (reference baseline) | 1 | Single Delegated |
-| **4a** | Each wallet sends 1 TX sequentially, waiting for confirmation | 10 | Sequential |
-| **4b** | All 10 wallets send 2 TXs concurrently | 20 | Parallel |
+| **4a** | 10 wallets each send 1 TX concurrently | 10 | Parallel |
+| **4b** | 10 wallets prove 2 TXs each, then submit all in parallel | 20 | Prove + Submit |
 | **4c** | xw (Party A) creates circuit TX, w (Party B) balances + proves + submits | 10 | Delegated |
 | **4d** | Same as 4c but 2 TXs per pair using speculative chaining (batch balance) | 20 | Delegated + Batch |
+| **4g** | 10 wallets each call add_entry on the contract sequentially | 10 | Contract Call |
 
 ## Project Structure
 
